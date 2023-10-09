@@ -171,7 +171,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: frontslicePayload,
-    chainId: 1,
+    chainId: 5,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -196,7 +196,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: backslicePayload,
-    chainId: 1,
+    chainId: 5,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -208,7 +208,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   // Simulate tx to get the gas used
   const signedTxs = [frontsliceTxSigned, middleTx, backsliceTxSigned];
   const simulatedResp = await callBundleFlashbots(signedTxs, targetBlockNumber);
-
+  console.log(simulatedResp);
   // Try and check all the errors
   try {
     sanityCheckSimulationResponse(simulatedResp);

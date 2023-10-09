@@ -49,7 +49,7 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-    "https://relay.flashbots.net",
+    "https://relay-goerli.flashbots.net",
     "eth_sendBundle",
     params
   );
@@ -101,7 +101,7 @@ export const callBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-    "https://relay.flashbots.net",
+    "https://relay-goerli.flashbots.net",
     "eth_callBundle",
     params
   );
@@ -112,7 +112,7 @@ export const getRawTransaction = (tx) => {
   let raw;
   let txData = stringifyBN(tx, true);
 
-  const common = new Common({ chain: "mainnet", hardfork: "london" });
+  const common = new Common({ chain: "goerli", hardfork: "shanghai" });
 
   if (tx.type === null || tx.type === 0) {
     raw =
