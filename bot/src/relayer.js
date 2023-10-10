@@ -62,17 +62,21 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
 export const sanityCheckSimulationResponse = (sim) => {
   // Contains first revert
   if (sim.firstRevert) {
+    console.log("firstRevert1")
     throw new Error(sim.firstRevert.revert);
   }
 
   // Contains first revert
   if (sim.firstRevert) {
+    console.log("firstRevert2")
     throw new Error(sim.firstRevert.revert);
   }
 
   // Simulation error type
   const simE = sim;
   if (simE.error) {
+    console.log("simE.error")
+    console.log("simE.error.message:", simE.error.message)
     throw new Error(simE.error.message);
   }
 
@@ -82,6 +86,10 @@ export const sanityCheckSimulationResponse = (sim) => {
     .filter((x) => x.error !== undefined)
     .map((x) => x.error + " " + (x.revert || ""));
   if (errors.length > 0) {
+    // TODO 错误出现在这里
+    console.log("sim.results: ",sim.results);
+    console.log("errors: ", errors);
+    console.log("errors.join: ", errors.join(", "));
     throw new Error(errors.join(", "));
   }
 
