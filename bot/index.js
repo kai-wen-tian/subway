@@ -12,7 +12,7 @@ import {
 import { calcSandwichOptimalIn, calcSandwichState } from "./src/numeric.js";
 import { parseUniv2RouterTx } from "./src/parse.js";
 import {
-  callBundleFlashbots,
+  callBundleFlashbots, getBundleStatus,
   getRawTransaction,
   sanityCheckSimulationResponse,
   sendBundleFlashbots,
@@ -160,7 +160,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   const frontslicePayload = ethers.utils.solidityPack(
     ["address", "address", "uint128", "uint128", "uint8"],
     [
-      token,
+      weth,
       pairToSandwich,
       optimalWethIn,
       sandwichStates.frontrun.amountOut,
@@ -185,7 +185,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   const backslicePayload = ethers.utils.solidityPack(
     ["address", "address", "uint128", "uint128", "uint8"],
     [
-      weth,
+      token,
       pairToSandwich,
       sandwichStates.frontrun.amountOut,
       sandwichStates.backrun.amountOut,
@@ -286,7 +286,13 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
       bundleResp
     )
   );
+
+  const bundleStatus = await getBundleStatus(bundleResp.bundleHash, targetBlockNumber);
+
+  console.log("bundleHash: ", bundleResp.bundleHash, "targetBlock: ", targetBlockNumber.toString(), "bundleStatus: ", bundleStatus)
+
 };
+
 
 const main = async () => {
   logInfo(

@@ -56,6 +56,23 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
   return resp.result;
 };
 
+// 通过 bundleHash 和 targetBlock 查询状态
+export const getBundleStatus = async (bundleHash , targetBlockNumber) => {
+  const params = [
+    {
+      bundleHash: bundleHash,
+      blockNumber: toRpcHexString(
+          ethers.BigNumber.from(targetBlock.toString())),
+    }
+  ];
+  const resp = await fbRequest(
+      "https://relay-goerli.flashbots.net",
+      "flashbots_getBundleStatsV2",
+      params
+  );
+  return resp.result;
+}
+
 // Helper function to help catch the various ways errors can be thrown from simulation
 // This helper function is needed as simulation response has may ways where the
 // error can be thrown.... which is not documented
