@@ -62,7 +62,7 @@ export const getBundleStatus = async (bundleHash , targetBlockNumber) => {
     {
       bundleHash: bundleHash,
       blockNumber: toRpcHexString(
-          ethers.BigNumber.from(targetBlock.toString())),
+          ethers.BigNumber.from(targetBlockNumber.toString())),
     }
   ];
   const resp = await fbRequest(
