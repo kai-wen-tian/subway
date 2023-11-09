@@ -21,9 +21,9 @@ export const getUniv2PairAddress = (tokenA, tokenB) => {
 
   const salt = ethers.utils.keccak256(token0 + token1.replace("0x", ""));
   const address = ethers.utils.getCreate2Address(
-    "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", // Factory address (contract creator)
+    "0xae727e03bFbF3d6e8524f15C0a1d31F81a0Bb9f0", // Factory address (contract creator)
     salt,
-    "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // init code hash
+    "0xaabd800398bd519eae79b5cd3003b9514d962d56f35dd08713a016b368a6382f" // init code hash
   );
 
   return address;
