@@ -167,11 +167,12 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
       ethers.BigNumber.from(token).lt(ethers.BigNumber.from(weth)) ? 0 : 1,
     ]
   );
+
   const frontsliceTx = {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: frontslicePayload,
-    chainId: 5,
+    chainId: 32382,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -196,7 +197,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: backslicePayload,
-    chainId: 5,
+    chainId: 32382,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -258,7 +259,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
         9
       )}) gwei < nextBaseFee (${formatUnits(nextBaseFee, 9)}) gwei`
     );
-    return;
+    // return;
   }
 
   // Okay, update backslice tx
