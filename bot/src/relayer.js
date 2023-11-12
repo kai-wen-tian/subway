@@ -9,6 +9,7 @@ const {
   AccessListEIP2930Transaction,
   Transaction,
 } = require("@ethereumjs/tx");
+let chainParams = require('./private-config.json')
 import { stringifyBN, toRpcHexString } from "./utils.js";
 import { authKeyWallet } from "./constants.js";
 
@@ -22,6 +23,7 @@ export const fbRequest = async (url, method, params) => {
   });
 
   const signature = await authKeyWallet.signMessage(ethers.utils.id(body));
+
   const headers = {
     "X-Flashbots-Signature": `${authKeyWallet.address}:${signature}`,
     "Content-Type": "application/json",
@@ -49,29 +51,12 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-      "https://18.162.116.194:28545",
+      "http://18.162.116.194:8545",
     "eth_sendBundle",
     params
   );
   return resp.result;
 };
-
-// 通过 bundleHash 和 targetBlock 查询状态
-export const getBundleStatus = async (bundleHash , targetBlockNumber) => {
-  const params = [
-    {
-      bundleHash: bundleHash,
-      blockNumber: toRpcHexString(
-          ethers.BigNumber.from(targetBlockNumber.toString())),
-    }
-  ];
-  const resp = await fbRequest(
-      "https://18.162.116.194:28545",
-      "flashbots_getBundleStatsV2",
-      params
-  );
-  return resp.result;
-}
 
 // Helper function to help catch the various ways errors can be thrown from simulation
 // This helper function is needed as simulation response has may ways where the
@@ -103,7 +88,6 @@ export const sanityCheckSimulationResponse = (sim) => {
     .filter((x) => x.error !== undefined)
     .map((x) => x.error + " " + (x.revert || ""));
   if (errors.length > 0) {
-    // TODO 错误出现在这里
     console.log("sim.results: ",sim.results);
     console.log("errors: ", errors);
     console.log("errors.join: ", errors.join(", "));
@@ -125,8 +109,9 @@ export const callBundleFlashbots = async (signedTxs, targetBlockNumber) => {
       ),
     },
   ];
+
   const resp = await fbRequest(
-      "https://18.162.116.194:28545",
+      "http://18.162.116.194:8545",
     "eth_callBundle",
     params
   );
@@ -134,34 +119,27 @@ export const callBundleFlashbots = async (signedTxs, targetBlockNumber) => {
 };
 
 export const getRawTransaction = (tx) => {
+
   let raw;
   let txData = stringifyBN(tx, true);
 
-  const common = new Common({ chain: "goerli", hardfork: "shanghai" });
-
+  const common = new Common({ chain: 'testnet', customChains: [ chainParams ], hardfork: "shanghai"})
   if (tx.type === null || tx.type === 0) {
     raw =
-      "0x" +
-      Transaction.fromTxData(txData, { common }).serialize().toString("hex");
+      "0x" + Transaction.fromTxData(txData, { common }).serialize().toString("hex");
   } else if (tx.type === 1) {
-    raw =
-      "0x" +
-      AccessListEIP2930Transaction.fromTxData(txData, { common })
+    raw = "0x" + AccessListEIP2930Transaction.fromTxData(txData, { common })
         .serialize()
         .toString("hex");
   } else if (tx.type === 2) {
-    raw =
-      "0x" +
-      FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+    raw = "0x" + FeeMarketEIP1559Transaction.fromTxData(txData, { common })
         .serialize()
         .toString("hex");
   } else {
     throw new Error("Invalid tx type");
   }
-
   if (ethers.utils.keccak256(raw) !== tx.hash) {
     throw new Error("Invalid tx signature");
   }
-
   return raw;
 };

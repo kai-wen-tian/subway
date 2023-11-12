@@ -99,6 +99,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     weth,
     token
   );
+
   const optimalWethIn = calcSandwichOptimalIn(
     userAmountIn,
     userMinRecv,
@@ -179,9 +180,11 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     nonce,
     type: 2,
   };
+
   const frontsliceTxSigned = await searcherWallet.signTransaction(frontsliceTx);
 
   const middleTx = getRawTransaction(tx);
+
 
   const backslicePayload = ethers.utils.solidityPack(
     ["address", "address", "uint128", "uint128", "uint8"],
@@ -193,6 +196,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
       ethers.BigNumber.from(weth).lt(ethers.BigNumber.from(token)) ? 0 : 1,
     ]
   );
+
   const backsliceTx = {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
@@ -204,6 +208,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     nonce: nonce + 1,
     type: 2,
   };
+
   const backsliceTxSigned = await searcherWallet.signTransaction(backsliceTx);
 
   // Simulate tx to get the gas used
@@ -259,13 +264,17 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
         9
       )}) gwei < nextBaseFee (${formatUnits(nextBaseFee, 9)}) gwei`
     );
+    // TODO return为了暂时调试
     // return;
   }
+
+  // TODO gas费任意设置
+  let gas = ethers.BigNumber.from(20000000)
 
   // Okay, update backslice tx
   const backsliceTxSignedWithBribe = await searcherWallet.signTransaction({
     ...backsliceTx,
-    maxPriorityFeePerGas,
+    gas,
   });
 
   // Fire the bundles
@@ -287,10 +296,6 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
       bundleResp
     )
   );
-
-  const bundleStatus = await getBundleStatus(bundleResp.bundleHash, targetBlockNumber);
-
-  console.log("bundleHash: ", bundleResp.bundleHash, "targetBlock: ", targetBlockNumber.toString(), "bundleStatus: ", bundleStatus)
 
 };
 

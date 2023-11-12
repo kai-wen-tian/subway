@@ -15,7 +15,7 @@ export const sortTokens = (tokenA, tokenB) => {
 /*
   Computes pair addresses off-chain
 */
-// TODO 手动修改 initCodeHash
+// TODO 修改 initCodeHash, 以及修改Uniswap factory地址
 export const getUniv2PairAddress = (tokenA, tokenB) => {
   const [token0, token1] = sortTokens(tokenA, tokenB);
 

@@ -1,0 +1,27 @@
+{
+  "name": "testnet",
+  "chainId": 32382,
+  "networkId": 32382,
+  "comment": "Private test network",
+  "url": "https://github.com/avalonche/eth-pos-devnet",
+  "genesis": {
+    "hash": "0x264c7acbd0985b3ab708e6462a72d8863123eb791de6f6972166af18058493b9",
+    "timestamp": "0x654c7dfc",
+    "gasLimit": 30000000,
+    "difficulty": 1,
+    "nonce": "0x0000000000000000",
+    "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000123463a4b065722e99115d6c222f267d9cabb5240000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "stateRoot": "0xc0c6591fb0db21813dd4a2ff94d935f225ee065a1452a107006727a497366759"
+  },
+  "hardforks": [
+    {
+      "name": "london",
+      "block": 0
+    },
+    {
+      "name": "shanghai",
+      "block": null,
+      "forkHash": null
+    }
+  ]
+}
