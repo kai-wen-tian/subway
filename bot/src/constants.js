@@ -1,22 +1,16 @@
 // Globals
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 import dotenv from "dotenv";
 dotenv.config();
 
 import { ethers } from "ethers";
 import { logError } from "./logging.js";
 
-const IUniswapV2PairAbi = require("./abi/IUniswapV2Pair.json");
-
 let hasEnv = true;
 
 const ENV_VARS = [
-  "RPC_URL",
   "RPC_URL_WSS",
   "PRIVATE_KEY",
-  "FLASHBOTS_AUTH_KEY",
-  "SANDWICH_CONTRACT",
+  "ADDRESS"
 ];
 
 for (let i = 0; i < ENV_VARS.length; i++) {
@@ -30,25 +24,6 @@ if (!hasEnv) {
   process.exit(1);
 }
 
-// Contracts
-// TODO univ2Router地址可以修改
-export const CONTRACTS = {
-  UNIV2_ROUTER: "0x6dd117308FaDd43cc27D6574D7e23054C1ceceFc",
-
-  // Sandwich contract
-  SANDWICH: process.env.SANDWICH_CONTRACT,
-};
-
-// Helpful tokens for testing
-export const TOKENS = {
-  WETH: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
-  USDC: "0xd35cceead182dcee0f148ebac9447da2c4d449c4",
-};
-
-// Providers
-export const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_URL
-);
 export const wssProvider = new ethers.providers.WebSocketProvider(
   process.env.RPC_URL_WSS
 );
@@ -63,11 +38,4 @@ export const searcherWallet = new ethers.Wallet(
 export const authKeyWallet = new ethers.Wallet(
   process.env.PRIVATE_KEY,
   wssProvider
-);
-
-// Common contracts
-export const uniswapV2Pair = new ethers.Contract(
-  ethers.constants.AddressZero,
-  IUniswapV2PairAbi,
-  searcherWallet
 );

@@ -51,7 +51,7 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-      "http://18.162.116.194:8545",
+      "https://relay-goerli.flashbots.net",
     "eth_sendBundle",
     params
   );
@@ -111,7 +111,7 @@ export const callBundleFlashbots = async (signedTxs, targetBlockNumber) => {
   ];
 
   const resp = await fbRequest(
-      "http://18.162.116.194:8545",
+      "https://relay-goerli.flashbots.net",
     "eth_callBundle",
     params
   );
