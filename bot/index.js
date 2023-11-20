@@ -112,9 +112,14 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   });
 
   // Fire the bundles
+  // const bundleResp = await sendBundleFlashbots(
+  //   [buildTxWithBribe],
+  //   targetBlockNumber
+  // );
+  // TODO: 为何 targetNumber + 1 会成功
   const bundleResp = await sendBundleFlashbots(
-    [buildTxWithBribe],
-    targetBlockNumber
+      [buildTxWithBribe],
+      targetBlockNumber + 1
   );
   logSuccess(
     strLogPrefix,
