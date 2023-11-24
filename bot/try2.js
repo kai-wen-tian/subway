@@ -1,3 +1,5 @@
+//import { loadEnvFile,checkEnvVars } from "./src/constants.js";
+import { loadEnvFile } from "./src/constants.js";
 import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { CONTRACTS, wssProvider, searcherWallet, uniswapV2Pair } from "./src/constants.js";
@@ -26,11 +28,17 @@ import { calcNextBlockBaseFee, match, stringifyBN } from "./src/utils.js";
 
 // Note: You'll probably want to break this function up
 //       handling everything in here so you can follow along easily
-const sandwichUniswapV2RouterTx = async (txHash) => {
-  const strLogPrefix = `txhash=${txHash}`;
 
+const sandwichUniswapV2RouterTx = async (txHash,uniqueHashes) => {
+  //console.log(uniqueHashes);
+  const strLogPrefix = `txhash=${txHash}`;
+  if (!uniqueHashes.has(txHash)) {
+    uniqueHashes.set(txHash,("[" + new Date().toISOString() + "]"));
+    //console.log(uniqueHashes);
+  }
   // Bot not broken right
-  logTrace(strLogPrefix, "received");
+  //logTrace(strLogPrefix, "received");
+  //console.log(txHash);
 
   // Get tx data
   const [tx, txRecp] = await Promise.all([
@@ -288,8 +296,13 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   );
 };
 
-const main = async () => {
-  
+const main = async (path) => {
+  console.log(path);
+  loadEnvFile(path);
+
+  //module.exports=path;
+  //await checkEnvVars();
+  const uniqueHashes = new Map(); // Set to store unique transaction hashes
   logInfo(
     "============================================================================"
   );
@@ -309,7 +322,7 @@ const main = async () => {
 
   // Add timestamp to all subsequent console.logs
   // One little two little three little dependency injections....
-  var txidate="";
+  /*
   const origLog = console.log;
   console.log = function (obj, ...placeholders) {
     if (typeof obj === "string")
@@ -322,41 +335,32 @@ const main = async () => {
 
     origLog.apply(this, placeholders);
   };
-
+*/
   logInfo("Listening to mempool...\n");
-
   // Listen to the mempool on local node
 //  const uniqueHashes = new Map(); // Set to store unique transaction hashes
   wssProvider.on("pending", (txHash) =>
-    sandwichUniswapV2RouterTx(txHash).catch((e) => {
-      const uniqueHashes = new Map(); // Set to store unique transaction hashes
-      txidate=txidate+("[" + new Date().toISOString() + "] ");
-      txidate=txidate+txHash+"\n";
+    sandwichUniswapV2RouterTx(txHash,uniqueHashes).catch((e) => {
       logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-      console.log("Feliz Navida" +txHash);
-      if (!uniqueHashes.has(txHash)) {
-        uniqueHashes.set(txHash,("[" + new Date().toISOString() + "]"));
-        console.log(uniqueHashes);
-        console.log(txHash +("[" + new Date().toISOString() + "]"));
-      }
     })
   );
- /* return new Promise ((resolve)=>{
+  return new Promise ((resolve)=>{
     setTimeout(() =>{
       wssProvider.destroy();
       resolve(uniqueHashes);
     },10000);
-  });*/
-  setTimeout(() =>{
+  });
+  /*setTimeout(async() =>{
     wssProvider.destroy();
-    console.log(uniqueHashes);
-  },10000) ;
+    //console.log(uniqueHashes);
+  },8000) ;*/
 
 };
 
-/*Promise.all([
-  main()
+Promise.all([
+  main('./.env'),
+  main('./.env.2')
 ]).then((results) => {
- .// console.log(results);
-});*/
-main();
+  console.log(results[0]);
+  console.log(results[1]);
+});

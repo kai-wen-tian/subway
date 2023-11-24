@@ -1,36 +1,51 @@
 // Globals
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+const reqire = createRequire(import.meta.url);
 import dotenv from "dotenv";
-dotenv.config();
+import path from '/Users/kai_w/OneDrive/Documents/Subway/subway/bot/try2.js';
+
+
+
+//require('dotenv').config();
+//dotenv.config({ path: './.env'});
+
 
 import { ethers } from "ethers";
 import { logError } from "./logging.js";
 
+export const loadEnvFile = async (fileName) => {
+    console.log(fileName);
+    //dotenv.config({ path: fileName});
+    //return fileName;
+  }
+dotenv.config({ path: loadEnvFile});
+
+
+//dotenv.config({ path: './.env.2' });
 const IUniswapV2PairAbi = require("./abi/IUniswapV2Pair.json");
 
 let hasEnv = true;
 
-const ENV_VARS = [
-  "RPC_URL",
-  "RPC_URL_WSS",
-  "PRIVATE_KEY",
-  "FLASHBOTS_AUTH_KEY",
-  "SANDWICH_CONTRACT",
-];
+  const ENV_VARS = [
+    "RPC_URL",
+    "RPC_URL_WSS",
+    "PRIVATE_KEY",
+    "FLASHBOTS_AUTH_KEY",
+    "SANDWICH_CONTRACT",
+  ];
 
-for (let i = 0; i < ENV_VARS.length; i++) {
-  if (!process.env[ENV_VARS[i]]) {
-    logError(`Missing env var ${ENV_VARS[i]}`);
-    hasEnv = false;
+  for (let i = 0; i < ENV_VARS.length; i++) {
+    if (!process.env[ENV_VARS[i]]) {
+      logError(`Missing env var ${ENV_VARS[i]}`);
+      hasEnv = false;
+    }
   }
-}
 
-if (!hasEnv) {
-  process.exit(1);
-}
+  if (!hasEnv) {
+    process.exit(1);
+  }
 
-// Contracts
+
 export const CONTRACTS = {
   UNIV2_ROUTER: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
 

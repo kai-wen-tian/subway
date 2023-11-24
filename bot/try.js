@@ -1,3 +1,4 @@
+import { loadEnvFile } from "./src/constants.js";
 import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { CONTRACTS, wssProvider, searcherWallet, uniswapV2Pair } from "./src/constants.js";
@@ -30,7 +31,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   const strLogPrefix = `txhash=${txHash}`;
 
   // Bot not broken right
-  logTrace(strLogPrefix, "received");
+  //logTrace(strLogPrefix, "received");
 
   // Get tx data
   const [tx, txRecp] = await Promise.all([
@@ -288,8 +289,12 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   );
 };
 
-const main = async () => {
-  
+const main = async (path) => {
+  loadEnvFile(path);
+  const uniqueHashes = new Map(); // Set to store unique transaction hashes
+  uniqueHashes.set("Jackson","Missispi");
+  console.log(uniqueHashes);
+
   logInfo(
     "============================================================================"
   );
@@ -310,6 +315,7 @@ const main = async () => {
   // Add timestamp to all subsequent console.logs
   // One little two little three little dependency injections....
   var txidate="";
+  
   const origLog = console.log;
   console.log = function (obj, ...placeholders) {
     if (typeof obj === "string")
@@ -324,39 +330,41 @@ const main = async () => {
   };
 
   logInfo("Listening to mempool...\n");
-
   // Listen to the mempool on local node
 //  const uniqueHashes = new Map(); // Set to store unique transaction hashes
   wssProvider.on("pending", (txHash) =>
     sandwichUniswapV2RouterTx(txHash).catch((e) => {
-      const uniqueHashes = new Map(); // Set to store unique transaction hashes
+
       txidate=txidate+("[" + new Date().toISOString() + "] ");
       txidate=txidate+txHash+"\n";
+      console.log(txHash);
       logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-      console.log("Feliz Navida" +txHash);
       if (!uniqueHashes.has(txHash)) {
         uniqueHashes.set(txHash,("[" + new Date().toISOString() + "]"));
         console.log(uniqueHashes);
-        console.log(txHash +("[" + new Date().toISOString() + "]"));
       }
     })
   );
- /* return new Promise ((resolve)=>{
+  return new Promise ((resolve)=>{
     setTimeout(() =>{
       wssProvider.destroy();
       resolve(uniqueHashes);
     },10000);
-  });*/
-  setTimeout(() =>{
+  });
+  /*setTimeout(async() =>{
     wssProvider.destroy();
-    console.log(uniqueHashes);
-  },10000) ;
+    //console.log(uniqueHashes);
+  },10000) ;*/
 
 };
 
-/*Promise.all([
+Promise.all([
+  /*main('./.env'),
+  main('./.env2')*/
   main()
 ]).then((results) => {
- .// console.log(results);
-});*/
-main();
+  console.log(results[0]);
+  console.log(results[1]);
+});
+
+//main();
