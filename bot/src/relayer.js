@@ -49,12 +49,29 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-    "https://relay.flashbots.net",
+    "https://relay-goerli.flashbots.net",
     "eth_sendBundle",
     params
   );
   return resp.result;
 };
+
+// 通过 bundleHash 和 targetBlock 查询状态
+export const getBundleStatus = async (bundleHash , targetBlockNumber) => {
+  const params = [
+    {
+      bundleHash: bundleHash,
+      blockNumber: toRpcHexString(
+          ethers.BigNumber.from(targetBlockNumber.toString())),
+    }
+  ];
+  const resp = await fbRequest(
+      "https://relay-goerli.flashbots.net",
+      "flashbots_getBundleStatsV2",
+      params
+  );
+  return resp.result;
+}
 
 // Helper function to help catch the various ways errors can be thrown from simulation
 // This helper function is needed as simulation response has may ways where the
@@ -62,17 +79,21 @@ export const sendBundleFlashbots = async (signedTxs, targetBlockNumber) => {
 export const sanityCheckSimulationResponse = (sim) => {
   // Contains first revert
   if (sim.firstRevert) {
+    console.log("firstRevert1")
     throw new Error(sim.firstRevert.revert);
   }
 
   // Contains first revert
   if (sim.firstRevert) {
+    console.log("firstRevert2")
     throw new Error(sim.firstRevert.revert);
   }
 
   // Simulation error type
   const simE = sim;
   if (simE.error) {
+    console.log("simE.error")
+    console.log("simE.error.message:", simE.error.message)
     throw new Error(simE.error.message);
   }
 
@@ -82,6 +103,10 @@ export const sanityCheckSimulationResponse = (sim) => {
     .filter((x) => x.error !== undefined)
     .map((x) => x.error + " " + (x.revert || ""));
   if (errors.length > 0) {
+    // TODO 错误出现在这里
+    console.log("sim.results: ",sim.results);
+    console.log("errors: ", errors);
+    console.log("errors.join: ", errors.join(", "));
     throw new Error(errors.join(", "));
   }
 
@@ -101,7 +126,7 @@ export const callBundleFlashbots = async (signedTxs, targetBlockNumber) => {
     },
   ];
   const resp = await fbRequest(
-    "https://relay.flashbots.net",
+    "https://relay-goerli.flashbots.net",
     "eth_callBundle",
     params
   );
@@ -112,7 +137,7 @@ export const getRawTransaction = (tx) => {
   let raw;
   let txData = stringifyBN(tx, true);
 
-  const common = new Common({ chain: "mainnet", hardfork: "london" });
+  const common = new Common({ chain: "goerli", hardfork: "shanghai" });
 
   if (tx.type === null || tx.type === 0) {
     raw =

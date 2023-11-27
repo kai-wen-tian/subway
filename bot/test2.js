@@ -6,6 +6,5 @@ function readJson(){
   //console.log(jsonString);
   console.log(jsonString[0]["RPC_URL"]);
 }
-//readJson();
-dotenv.config();
-console.log(process.env.RPC_URL);
+readJson();
+

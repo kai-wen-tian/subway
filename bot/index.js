@@ -1,6 +1,6 @@
 import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { CONTRACTS, wssProvider, searcherWallet, uniswapV2Pair } from "./src/constants.js";
+import { CONTRACTS, wssProvider, searcherWallet,loadEnv } from "./src/constants.js";
 import {
   logDebug,
   logError,
@@ -12,7 +12,7 @@ import {
 import { calcSandwichOptimalIn, calcSandwichState } from "./src/numeric.js";
 import { parseUniv2RouterTx } from "./src/parse.js";
 import {
-  callBundleFlashbots,
+  callBundleFlashbots, getBundleStatus,
   getRawTransaction,
   sanityCheckSimulationResponse,
   sendBundleFlashbots,
@@ -160,7 +160,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   const frontslicePayload = ethers.utils.solidityPack(
     ["address", "address", "uint128", "uint128", "uint8"],
     [
-      token,
+      weth,
       pairToSandwich,
       optimalWethIn,
       sandwichStates.frontrun.amountOut,
@@ -171,7 +171,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: frontslicePayload,
-    chainId: 1,
+    chainId: 5,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -185,7 +185,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   const backslicePayload = ethers.utils.solidityPack(
     ["address", "address", "uint128", "uint128", "uint8"],
     [
-      weth,
+      token,
       pairToSandwich,
       sandwichStates.frontrun.amountOut,
       sandwichStates.backrun.amountOut,
@@ -196,7 +196,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     to: CONTRACTS.SANDWICH,
     from: searcherWallet.address,
     data: backslicePayload,
-    chainId: 1,
+    chainId: 5,
     maxPriorityFeePerGas: 0,
     maxFeePerGas: nextBaseFee,
     gasLimit: 250000,
@@ -208,7 +208,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   // Simulate tx to get the gas used
   const signedTxs = [frontsliceTxSigned, middleTx, backsliceTxSigned];
   const simulatedResp = await callBundleFlashbots(signedTxs, targetBlockNumber);
-
+  console.log(simulatedResp);
   // Try and check all the errors
   try {
     sanityCheckSimulationResponse(simulatedResp);
@@ -286,10 +286,19 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
       bundleResp
     )
   );
+
+  const bundleStatus = await getBundleStatus(bundleResp.bundleHash, targetBlockNumber);
+
+  console.log("bundleHash: ", bundleResp.bundleHash, "targetBlock: ", targetBlockNumber.toString(), "bundleStatus: ", bundleStatus)
+
 };
 
-const main = async () => {
-  
+
+const main = async (num) => {
+  await loadEnv(num);
+  //const provider = createProvider();
+  //const wssProvider = createWssProvider();
+
   logInfo(
     "============================================================================"
   );
@@ -309,7 +318,6 @@ const main = async () => {
 
   // Add timestamp to all subsequent console.logs
   // One little two little three little dependency injections....
-  var txidate="";
   const origLog = console.log;
   console.log = function (obj, ...placeholders) {
     if (typeof obj === "string")
@@ -326,37 +334,11 @@ const main = async () => {
   logInfo("Listening to mempool...\n");
 
   // Listen to the mempool on local node
-//  const uniqueHashes = new Map(); // Set to store unique transaction hashes
   wssProvider.on("pending", (txHash) =>
     sandwichUniswapV2RouterTx(txHash).catch((e) => {
-      const uniqueHashes = new Map(); // Set to store unique transaction hashes
-      txidate=txidate+("[" + new Date().toISOString() + "] ");
-      txidate=txidate+txHash+"\n";
       logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-      console.log("Feliz Navida" +txHash);
-      if (!uniqueHashes.has(txHash)) {
-        uniqueHashes.set(txHash,("[" + new Date().toISOString() + "]"));
-        console.log(uniqueHashes);
-        console.log(txHash +("[" + new Date().toISOString() + "]"));
-      }
     })
   );
- /* return new Promise ((resolve)=>{
-    setTimeout(() =>{
-      wssProvider.destroy();
-      resolve(uniqueHashes);
-    },10000);
-  });*/
-  setTimeout(() =>{
-    wssProvider.destroy();
-    console.log(uniqueHashes);
-  },10000) ;
-
 };
 
-/*Promise.all([
-  main()
-]).then((results) => {
- .// console.log(results);
-});*/
-main();
+main(1);

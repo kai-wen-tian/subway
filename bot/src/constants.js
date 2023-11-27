@@ -1,50 +1,54 @@
-// Globals
+/*// Globals
 import { createRequire } from "module";
-const reqire = createRequire(import.meta.url);
+const require = createRequire(import.meta.url);
 import dotenv from "dotenv";
-import path from '/Users/kai_w/OneDrive/Documents/Subway/subway/bot/try2.js';
-
-
-
-//require('dotenv').config();
-//dotenv.config({ path: './.env'});
-
+dotenv.config();
 
 import { ethers } from "ethers";
 import { logError } from "./logging.js";
+import { logInfo } from "./logging.js";
 
-export const loadEnvFile = async (fileName) => {
-    console.log(fileName);
-    //dotenv.config({ path: fileName});
-    //return fileName;
-  }
-dotenv.config({ path: loadEnvFile});
+const jsonString = JSON.parse(process.env.RPC_WSS_URL);
+var RPC_URL=(jsonString[0]["RPC_URL"]);
+var RPC_URL_WSS=(jsonString[0]["RPC_URL_WSS"]);
+
+//console.log(jsonString);
+export const loadEnv = async(number)=>{
+  RPC_URL=(jsonString[number]["RPC_URL"]);
+  console.log(RPC_URL);
+  RPC_URL_WSS=(jsonString[number]["RPC_URL_WSS"]);
+  console.log(RPC_URL_WSS);
+}
 
 
-//dotenv.config({ path: './.env.2' });
 const IUniswapV2PairAbi = require("./abi/IUniswapV2Pair.json");
+//let RPC_URL, RPC_URL_WSS; 
 
 let hasEnv = true;
 
-  const ENV_VARS = [
-    "RPC_URL",
-    "RPC_URL_WSS",
-    "PRIVATE_KEY",
-    "FLASHBOTS_AUTH_KEY",
-    "SANDWICH_CONTRACT",
-  ];
+const ENV_VARS = [
+  "RPC_WSS_URL",
+  "PRIVATE_KEY",
+  "FLASHBOTS_AUTH_KEY",
+  "SANDWICH_CONTRACT",
+];
 
-  for (let i = 0; i < ENV_VARS.length; i++) {
-    if (!process.env[ENV_VARS[i]]) {
-      logError(`Missing env var ${ENV_VARS[i]}`);
-      hasEnv = false;
-    }
+for (let i = 0; i < ENV_VARS.length; i++) {
+  if (!process.env[ENV_VARS[i]]) {
+    logError(`Missing env var ${ENV_VARS[i]}`);
+    hasEnv = false;
   }
-
-  if (!hasEnv) {
-    process.exit(1);
+  else{
+    logInfo(loadEnv);
   }
+}
 
+if (!hasEnv) {
+  process.exit(1);
+}
+
+
+// Contracts'
 
 export const CONTRACTS = {
   UNIV2_ROUTER: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
@@ -55,22 +59,25 @@ export const CONTRACTS = {
 
 // Helpful tokens for testing
 export const TOKENS = {
-  WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  WETH: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
+  USDC: "0xd35cceead182dcee0f148ebac9447da2c4d449c4",
 };
 
-// Providers
+
 export const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_URL
+  //process.env.RPC_URL
+  RPC_URL
 );
+
 export const wssProvider = new ethers.providers.WebSocketProvider(
-  process.env.RPC_URL_WSS
+  //process.env.RPC_URL_WSS
+  RPC_URL_WSS
 );
 
 // Used to send transactions, needs ether
 export const searcherWallet = new ethers.Wallet(
   process.env.PRIVATE_KEY,
-  wssProvider
+  wssProvider     
 );
 
 // Used to sign flashbots headers doesn't need any ether
@@ -85,3 +92,94 @@ export const uniswapV2Pair = new ethers.Contract(
   IUniswapV2PairAbi,
   searcherWallet
 );
+*/
+/////////////////////////////////////////////Break Line
+
+// Globals
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+import dotenv from "dotenv";
+dotenv.config();
+
+import { ethers } from "ethers";
+import { logError } from "./logging.js";
+import { logInfo } from "./logging.js";
+
+const jsonString = JSON.parse(process.env.RPC_WSS_URL);
+var RPC_URL=(jsonString[0]["RPC_URL"]);
+var RPC_URL_WSS=(jsonString[0]["RPC_URL_WSS"]);
+
+//console.log(jsonString);
+export const loadEnv = async(number)=>{
+  RPC_URL=(jsonString[number]["RPC_URL"]);
+  console.log(RPC_URL);
+  RPC_URL_WSS=(jsonString[number]["RPC_URL_WSS"]);
+  console.log(RPC_URL_WSS);
+}
+
+
+const IUniswapV2PairAbi = require("./abi/IUniswapV2Pair.json");
+//let RPC_URL, RPC_URL_WSS; 
+
+let hasEnv = true;
+
+const ENV_VARS = [
+  "RPC_WSS_URL",
+  "PRIVATE_KEY",
+  "FLASHBOTS_AUTH_KEY",
+  "SANDWICH_CONTRACT",
+];
+
+for (let i = 0; i < ENV_VARS.length; i++) {
+  if (!process.env[ENV_VARS[i]]) {
+    logError(`Missing env var ${ENV_VARS[i]}`);
+    hasEnv = false;
+  }
+  else{
+    logInfo(loadEnv);
+  }
+}
+
+if (!hasEnv) {
+  process.exit(1);
+}
+
+
+// Contracts'
+
+export const getProviders = () =>{
+  const provider = new ethers.providers.JsonRpcProvider(
+    //process.env.RPC_URL
+    RPC_URL
+  );
+  const CONTRACTS = {
+    UNIV2_ROUTER: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+  
+    // Sandwich contract
+    SANDWICH: process.env.SANDWICH_CONTRACT,
+  };
+  const wssProvider = new ethers.providers.WebSocketProvider(
+    //process.env.RPC_URL_WSS
+    RPC_URL_WSS
+  );
+  const searcherWallet = new ethers.Wallet(
+    process.env.PRIVATE_KEY,
+    wssProvider     
+  );
+  const authKeyWallet = new ethers.Wallet(
+    process.env.PRIVATE_KEY,
+    wssProvider
+  );
+  const uniswapV2Pair = new ethers.Contract(
+    ethers.constants.AddressZero,
+    IUniswapV2PairAbi,
+    searcherWallet
+  );
+  
+}
+
+
+export const TOKENS = {
+  WETH: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
+  USDC: "0xd35cceead182dcee0f148ebac9447da2c4d449c4",
+};
