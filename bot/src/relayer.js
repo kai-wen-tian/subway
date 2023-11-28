@@ -10,7 +10,7 @@ const {
   Transaction,
 } = require("@ethereumjs/tx");
 import { stringifyBN, toRpcHexString } from "./utils.js";
-import { authKeyWallet } from "./constants.js";
+import { authKeyWallets } from "./constants.js";
 
 let _fbId = 1;
 export const fbRequest = async (url, method, params) => {
@@ -21,9 +21,9 @@ export const fbRequest = async (url, method, params) => {
     jsonrpc: "2.0",
   });
 
-  const signature = await authKeyWallet[0].signMessage(ethers.utils.id(body));
+  const signature = await authKeyWallets[0].signMessage(ethers.utils.id(body));
   const headers = {
-    "X-Flashbots-Signature": `${authKeyWallet[0].address}:${signature}`,
+    "X-Flashbots-Signature": `${authKeyWallets[0].address}:${signature}`,
     "Content-Type": "application/json",
   };
 

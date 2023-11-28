@@ -1,6 +1,6 @@
 import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { CONTRACTS, wssProvider, searcherWallet } from "./src/constants.js";
+import { CONTRACTS, wssProviders, searcherWallets } from "./src/constants.js";
 import {
   logDebug,
   logError,
@@ -36,8 +36,8 @@ const sandwichUniswapV2RouterTx = async (txHash,num) => {
 
   // Get tx data
   const [tx, txRecp] = await Promise.all([
-    wssProvider[num].getTransaction(txHash),
-    wssProvider[num].getTransactionReceipt(txHash),
+    wssProviders[num].getTransaction(txHash),
+    wssProviders[num].getTransactionReceipt(txHash),
   ]);
 
   // Make sure transaction hasn't been mined
@@ -153,10 +153,10 @@ const sandwichUniswapV2RouterTx = async (txHash,num) => {
 
   // Get block data to compute bribes etc
   // as bribes calculation has correlation with gasUsed
-  const block = await wssProvider[num].getBlock();
+  const block = await wssProviders[num].getBlock();
   const targetBlockNumber = block.number + 1;
   const nextBaseFee = calcNextBlockBaseFee(block);
-  const nonce = await wssProvider[num].getTransactionCount(searcherWallet[num].address);
+  const nonce = await wssProviders[num].getTransactionCount(searcherWallet[num].address);
 
   // Craft our payload
   const frontslicePayload = ethers.utils.solidityPack(
@@ -296,74 +296,14 @@ const sandwichUniswapV2RouterTx = async (txHash,num) => {
 };
 
 
-const main = async (num) => {
-  /*
-  logInfo(
-    "============================================================================"
-  );
-  logInfo(
-    "          _                       _         _   \r\n  ____  _| |____ __ ____ _ _  _  | |__  ___| |_ \r\n (_-< || | '_ \\ V  V / _` | || | | '_ \\/ _ \\  _|\r\n /__/\\_,_|_.__/\\_/\\_/\\__,_|\\_, | |_.__/\\___/\\__|\r\n | |__ _  _  | (_) |__  ___|__/__ __            \r\n | '_ \\ || | | | | '_ \\/ -_) V / '  \\           \r\n |_.__/\\_, | |_|_|_.__/\\___|\\_/|_|_|_|          \r\n       |__/                                     \n"
-  );
-  logInfo("github: https://github.com/libevm");
-  logInfo("twitter: https://twitter.com/libevm");
-  logInfo(
-    "============================================================================\n"
-  );
-  logInfo(`Searcher Wallet: ${searcherWallet[0].address}`);
-  logInfo(`Node URL: ${wssProvider[0].connection.url}\n`);
-  logInfo(
-    "============================================================================\n"
-  );*/
-
-  // Add timestamp to all subsequent console.logs
-  // One little two little three little dependency injections....
-  /*
-  const origLog = console.log;
-  console.log = function (obj, ...placeholders) {
-    if (typeof obj === "string")
-      placeholders.unshift("[" + new Date().toISOString() + "] " + obj);
-    else {
-      // This handles console.log( object )
-      placeholders.unshift(obj);
-      placeholders.unshift("[" + new Date().toISOString() + "] %j");
-    }
-
-    origLog.apply(this, placeholders);
-  };
-
-  logInfo("Listening to mempool...\n");*/
-  /*for (let i = 0; i < jsonString.length; i++) {
-    
-  }*/
-  //const num= 0;
-  // Listen to the mempool on local node
-/*
-  let uniquetxHash=new Set();
-  wssProvider[0].on("pending", (txHash) =>{
-    if(!uniquetxHash.has(txHash)){
-      uniquetxHash.add(txHash);
-      sandwichUniswapV2RouterTx(txHash,0).catch((e) => {
-        logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-      })
-    }
-});
-  wssProvider[1].on("pending", (txHash) =>{
-    if(!uniquetxHash.has(txHash)){
-      uniquetxHash.add(txHash);
-      sandwichUniswapV2RouterTx(txHash,1).catch((e) => {
-        logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-      })
-    }
-  });*/
-  let uniquetxHash = new Map();
-
-  wssProvider.forEach((provider, index) => {
-    provider.on("pending", (txHash) => {
-      if (!uniquetxHash.has(txHash)) {
-        uniquetxHash.set(txHash,"[" + new Date().toISOString() + "] "+ index);
-        //console.log(uniquetxHash);
+const main = async () => {
+  let uniqueTxHash = new Map();
+  wssProviders.forEach((wssProvider, index) => {
+    wssProvider.on("pending", (txHash) => {
+      if (!uniqueTxHash.has(txHash)) {
+        uniqueTxHash.set(txHash,"[" + new Date().toISOString() + "] "+ index);
         sandwichUniswapV2RouterTx(txHash, index).catch((e) => {
-          logFatal(`Provider ${index} txhash=${txHash} error ${JSON.stringify(e)}`);
+          logFatal(`wssProvider ${index} txhash=${txHash} error ${JSON.stringify(e)}`);
         });
       }
       else{
