@@ -1,6 +1,6 @@
 import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { CONTRACTS, wssProvider, searcherWallet,loadEnv } from "./src/constants.js";
+import { CONTRACTS, wssProvider, searcherWallet } from "./src/constants.js";
 import {
   logDebug,
   logError,
@@ -23,19 +23,21 @@ import {
   getUniv2Reserve,
 } from "./src/univ2.js";
 import { calcNextBlockBaseFee, match, stringifyBN } from "./src/utils.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Note: You'll probably want to break this function up
 //       handling everything in here so you can follow along easily
-const sandwichUniswapV2RouterTx = async (txHash) => {
+const sandwichUniswapV2RouterTx = async (txHash,num) => {
   const strLogPrefix = `txhash=${txHash}`;
 
   // Bot not broken right
-  logTrace(strLogPrefix, "received");
+  logTrace(strLogPrefix, "received ",num);
 
   // Get tx data
   const [tx, txRecp] = await Promise.all([
-    wssProvider.getTransaction(txHash),
-    wssProvider.getTransactionReceipt(txHash),
+    wssProvider[num].getTransaction(txHash),
+    wssProvider[num].getTransactionReceipt(txHash),
   ]);
 
   // Make sure transaction hasn't been mined
@@ -151,10 +153,10 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
 
   // Get block data to compute bribes etc
   // as bribes calculation has correlation with gasUsed
-  const block = await wssProvider.getBlock();
+  const block = await wssProvider[num].getBlock();
   const targetBlockNumber = block.number + 1;
   const nextBaseFee = calcNextBlockBaseFee(block);
-  const nonce = await wssProvider.getTransactionCount(searcherWallet.address);
+  const nonce = await wssProvider[num].getTransactionCount(searcherWallet[num].address);
 
   // Craft our payload
   const frontslicePayload = ethers.utils.solidityPack(
@@ -169,7 +171,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   );
   const frontsliceTx = {
     to: CONTRACTS.SANDWICH,
-    from: searcherWallet.address,
+    from: searcherWallet[num].address,
     data: frontslicePayload,
     chainId: 5,
     maxPriorityFeePerGas: 0,
@@ -178,7 +180,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     nonce,
     type: 2,
   };
-  const frontsliceTxSigned = await searcherWallet.signTransaction(frontsliceTx);
+  const frontsliceTxSigned = await searcherWallet[num].signTransaction(frontsliceTx);
 
   const middleTx = getRawTransaction(tx);
 
@@ -194,7 +196,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   );
   const backsliceTx = {
     to: CONTRACTS.SANDWICH,
-    from: searcherWallet.address,
+    from: searcherWallet[num].address,
     data: backslicePayload,
     chainId: 5,
     maxPriorityFeePerGas: 0,
@@ -203,7 +205,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
     nonce: nonce + 1,
     type: 2,
   };
-  const backsliceTxSigned = await searcherWallet.signTransaction(backsliceTx);
+  const backsliceTxSigned = await searcherWallet[num].signTransaction(backsliceTx);
 
   // Simulate tx to get the gas used
   const signedTxs = [frontsliceTxSigned, middleTx, backsliceTxSigned];
@@ -262,7 +264,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
   }
 
   // Okay, update backslice tx
-  const backsliceTxSignedWithBribe = await searcherWallet.signTransaction({
+  const backsliceTxSignedWithBribe = await searcherWallet[num].signTransaction({
     ...backsliceTx,
     maxPriorityFeePerGas,
   });
@@ -295,10 +297,7 @@ const sandwichUniswapV2RouterTx = async (txHash) => {
 
 
 const main = async (num) => {
-  await loadEnv(num);
-  //const provider = createProvider();
-  //const wssProvider = createWssProvider();
-
+  /*
   logInfo(
     "============================================================================"
   );
@@ -310,14 +309,15 @@ const main = async (num) => {
   logInfo(
     "============================================================================\n"
   );
-  logInfo(`Searcher Wallet: ${searcherWallet.address}`);
-  logInfo(`Node URL: ${wssProvider.connection.url}\n`);
+  logInfo(`Searcher Wallet: ${searcherWallet[0].address}`);
+  logInfo(`Node URL: ${wssProvider[0].connection.url}\n`);
   logInfo(
     "============================================================================\n"
-  );
+  );*/
 
   // Add timestamp to all subsequent console.logs
   // One little two little three little dependency injections....
+  /*
   const origLog = console.log;
   console.log = function (obj, ...placeholders) {
     if (typeof obj === "string")
@@ -331,14 +331,46 @@ const main = async (num) => {
     origLog.apply(this, placeholders);
   };
 
-  logInfo("Listening to mempool...\n");
-
+  logInfo("Listening to mempool...\n");*/
+  /*for (let i = 0; i < jsonString.length; i++) {
+    
+  }*/
+  //const num= 0;
   // Listen to the mempool on local node
-  wssProvider.on("pending", (txHash) =>
-    sandwichUniswapV2RouterTx(txHash).catch((e) => {
-      logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
-    })
-  );
+/*
+  let uniquetxHash=new Set();
+  wssProvider[0].on("pending", (txHash) =>{
+    if(!uniquetxHash.has(txHash)){
+      uniquetxHash.add(txHash);
+      sandwichUniswapV2RouterTx(txHash,0).catch((e) => {
+        logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
+      })
+    }
+});
+  wssProvider[1].on("pending", (txHash) =>{
+    if(!uniquetxHash.has(txHash)){
+      uniquetxHash.add(txHash);
+      sandwichUniswapV2RouterTx(txHash,1).catch((e) => {
+        logFatal(`txhash=${txHash} error ${JSON.stringify(e)}`);
+      })
+    }
+  });*/
+  let uniquetxHash = new Map();
+
+  wssProvider.forEach((provider, index) => {
+    provider.on("pending", (txHash) => {
+      if (!uniquetxHash.has(txHash)) {
+        uniquetxHash.set(txHash,"[" + new Date().toISOString() + "] "+ index);
+        //console.log(uniquetxHash);
+        sandwichUniswapV2RouterTx(txHash, index).catch((e) => {
+          logFatal(`Provider ${index} txhash=${txHash} error ${JSON.stringify(e)}`);
+        });
+      }
+      else{
+        console.log("Repeated txHash: "+txHash+" "+index);
+      }
+    });
+  });
 };
 
-main(1);
+main();

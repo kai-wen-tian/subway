@@ -21,9 +21,9 @@ export const fbRequest = async (url, method, params) => {
     jsonrpc: "2.0",
   });
 
-  const signature = await authKeyWallet.signMessage(ethers.utils.id(body));
+  const signature = await authKeyWallet[0].signMessage(ethers.utils.id(body));
   const headers = {
-    "X-Flashbots-Signature": `${authKeyWallet.address}:${signature}`,
+    "X-Flashbots-Signature": `${authKeyWallet[0].address}:${signature}`,
     "Content-Type": "application/json",
   };
 
