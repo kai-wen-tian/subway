@@ -49,13 +49,16 @@ export const TOKENS = {
 };
 
 export const wssProviders = [];
+export const providers=[];
 export const searcherWallets = [];
 export const authKeyWallets = [];
 export const uniswapV2Pairs = [];
 for (let i = 0; i < jsonString.length; i++) {
-  const item = jsonString[i]["RPC_URL_WSS"];
-  wssProviders.push(new ethers.providers.WebSocketProvider(item));
-  searcherWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
-  authKeyWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
-  uniswapV2Pairs.push(ethers.AddressZero,IUniswapV2PairAbi,new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
+  const RPC_URL_WSS = jsonString[i]["RPC_URL_WSS"];
+  const RPC_URL = jsonString[i]["RPC_URL"];
+  wssProviders.push(new ethers.providers.WebSocketProvider(RPC_URL_WSS));
+  providers.push(new ethers.providers.JsonRpcProvider(RPC_URL));
+  searcherWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(RPC_URL_WSS)));
+  authKeyWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(RPC_URL_WSS)));
+  uniswapV2Pairs.push(ethers.AddressZero,IUniswapV2PairAbi,new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(RPC_URL_WSS)));
 }
