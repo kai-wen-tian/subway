@@ -54,8 +54,8 @@ export const authKeyWallets = [];
 export const uniswapV2Pairs = [];
 for (let i = 0; i < jsonString.length; i++) {
   const item = jsonString[i]["RPC_URL_WSS"];
-  wssProviders.push(new ethers.WebSocketProvider(item));
-  searcherWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.WebSocketProvider(item)));
-  authKeyWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.WebSocketProvider(item)));
-  uniswapV2Pairs.push(ethers.ZeroAddress,IUniswapV2PairAbi,new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.WebSocketProvider(item)));
+  wssProviders.push(new ethers.providers.WebSocketProvider(item));
+  searcherWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
+  authKeyWallets.push(new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
+  uniswapV2Pairs.push(ethers.AddressZero,IUniswapV2PairAbi,new ethers.Wallet(process.env.PRIVATE_KEY,new ethers.providers.WebSocketProvider(item)));
 }
